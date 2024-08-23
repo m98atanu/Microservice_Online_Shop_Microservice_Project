@@ -1,0 +1,23 @@
+
+public class Demo {
+	public static void main(String[]args) {
+		int i=0;
+		loop:
+		{
+			System.out.println("loop lable line");
+			try {
+				for( ; true; i++) {
+					System.out.println(i);
+					if(i>5) break;
+				}
+			}
+			catch(Exception e) {
+				System.out.println("exception ");
+			}
+			finally {
+				System.out.println("finally");
+			}
+		}
+		
+	}
+}

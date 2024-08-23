@@ -1,0 +1,5 @@
+package com.microservices.cart.DTO;
+
+public class UpdatedCartLineItem {
+
+}

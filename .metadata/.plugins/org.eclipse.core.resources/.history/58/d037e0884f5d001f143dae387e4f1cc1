@@ -1,0 +1,10 @@
+package com.microservices.product.DTO;
+
+import lombok.Data;
+
+@Data
+public class UpdatedProduct {
+	private String productName;
+	private String productDescription;
+	private double productPrice;
+}

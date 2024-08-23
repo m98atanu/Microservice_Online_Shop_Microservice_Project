@@ -1,0 +1,25 @@
+package com.microservices.demo.DTO;
+
+import java.util.Optional;
+
+import com.microservices.demo.model.CustomerAddress;
+
+import lombok.Setter;
+
+@Setter
+public class UpdatedCustomerDetails {
+	private String customerEmail;
+	private CustomerAddress customerBillingAddress;
+	private CustomerAddress customerShippingAddress;
+	public Optional<String> getCustomerEmail() {
+		return Optional.ofNullable(customerEmail);
+	}
+	public CustomerAddress getCustomerBillingAddress() {
+		return customerBillingAddress;
+	}
+	public CustomerAddress getCustomerShippingAddress() {
+		return customerShippingAddress;
+	}
+	
+	
+}

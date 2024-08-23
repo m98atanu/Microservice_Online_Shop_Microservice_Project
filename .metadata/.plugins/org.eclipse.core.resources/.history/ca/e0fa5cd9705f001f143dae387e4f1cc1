@@ -1,0 +1,15 @@
+package com.microservices.shoppingservice.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.microservices.shoppingservice.service.ShoppingService;
+
+@RestController
+@RequestMapping("/api/shoppingservice")
+public class ShoppingServiceController {
+	@Autowired ShoppingService shoppingService;
+	
+	
+}

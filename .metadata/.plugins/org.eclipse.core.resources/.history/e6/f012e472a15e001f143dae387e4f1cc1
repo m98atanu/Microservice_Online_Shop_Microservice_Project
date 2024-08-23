@@ -1,0 +1,5 @@
+package com.microservices.order.model;
+
+public class OrderEntity {
+
+}

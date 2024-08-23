@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+    <fullyQualifiedTypeName name="org.springframework.data.annotation.Id"/>
+    <fullyQualifiedTypeName name="com.microservices.demo.model.CustomerEntity"/>
+    <fullyQualifiedTypeName name="com.microservices.demo.DTO.UpdatedCustomerDetails"/>
+    <fullyQualifiedTypeName name="com.microservices.cart.repository.LineItemRepository"/>
+    <fullyQualifiedTypeName name="com.microservices.cart.model.CartEntity"/>
+    <fullyQualifiedTypeName name="jakarta.persistence.CascadeType"/>
+    <fullyQualifiedTypeName name="com.microservices.order.model.LineItem"/>
+    <fullyQualifiedTypeName name="com.microservices.order.service.OrderService"/>
+    <fullyQualifiedTypeName name="com.microservices.shoppingservice.externalAPI.productAPI.ProductEntity"/>
+    <fullyQualifiedTypeName name="java.util.List"/>
+    <fullyQualifiedTypeName name="java.util.Optional"/>
+    <fullyQualifiedTypeName name="java.util.stream.Collectors"/>
+    <fullyQualifiedTypeName name="org.springframework.http.HttpStatus"/>
+    <fullyQualifiedTypeName name="jakarta.persistence.Id"/>
+    <fullyQualifiedTypeName name="com.microservices.demo.exceptionhandler.EmailIdNotUniqueException"/>
+</qualifiedTypeNameHistroy>

@@ -1,0 +1,10 @@
+package com.microservices.cart.exceptionhandler;
+
+public class QuantityNotAvailableException extends Exception{
+	public QuantityNotAvailableException() {
+		
+	}
+	public QuantityNotAvailableException(String errorMessage) {
+		super(errorMessage);
+	}
+}

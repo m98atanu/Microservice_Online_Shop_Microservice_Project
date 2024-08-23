@@ -1,0 +1,17 @@
+package com.microservices.cart.DTO;
+
+import java.util.Optional;
+
+import jakarta.annotation.Nonnull;
+import lombok.Setter;
+
+@Setter
+public class UpdatedCartLineItemByProductId {
+	@Nonnull
+	private int productId;
+	private int quantity;
+	
+	public Optional<Integer> getQuantity(){
+		return Optional.ofNullable(quantity);
+	}
+}

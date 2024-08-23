@@ -1,0 +1,25 @@
+package com.microservices.order.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.microservices.order.model.LineItem;
+import com.microservices.order.repository.OrderRepository;
+
+@Service
+public class OrderService {
+	@Autowired OrderRepository orderRepo;
+	
+	private boolean isQuantityAvailableInInventoryDb (List<LineItem> items){
+		if(items != null) {
+			return items.stream()
+					.allMatch(item ->
+						item.getQuantity() < inventoryServiceEndpoints.fetchInventoryByProductId(item.getProductId()).getBody().getQuantity()
+					);
+		}
+		else return false;
+	}
+
+}

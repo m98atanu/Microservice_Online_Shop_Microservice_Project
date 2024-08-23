@@ -1,0 +1,5 @@
+package com.microservices.cart.external.APIEndpoints;
+
+public class InventoryEntity {
+
+}
