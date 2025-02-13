@@ -41,14 +41,14 @@ PUT: http://localhost:6000/api/shoppingservice/customer/1/cart
     {
         "itemId": 1,
         "productId":1,
-        "produntName": "Moto g62",
+        "productName": "Moto g62",
         "quantity": 3,
         "price": null
     },
      {
         "itemId": 2,
         "productId":2,
-        "produntName": "Strong mobile",
+        "productName": "Strong mobile",
         "quantity": 3,
         "price": null
     }
