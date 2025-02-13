@@ -7,6 +7,7 @@ POST: http://localhost:6000/api/shoppingservice/products
    "productPrice": 16000.00,
    "quantity": 9
 }
+
 POST: http://localhost:6000/api/shoppingservice/products
 {
    "productName": "Nokia g62",
