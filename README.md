@@ -1,5 +1,21 @@
 This is the api you should use:
 
+To add product one has to register himself as admin. For that use below uri
+POST: http://localhost:6000/register/admin
+{
+    "id":1,
+    "email": "atanu1@gmail.com",
+    "pwd":"1234",
+    "role": "admin" //Only admin is allowed to add product
+}
+
+Then admin need to logged in with the credentials
+GET: http://localhost:6000/login/admin
+username: atanu1@gmail.com
+password: 1234
+
+Then one JWT will be generated and will be stored in the response's header: "AuthorizationJwt"
+Now admin need to access the uri with proper jwt to add the product,
 POST: http://localhost:6000/api/shoppingservice/products
 {
    "productName": "Moto g62",
