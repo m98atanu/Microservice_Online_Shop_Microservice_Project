@@ -1,5 +1,0 @@
-package com.microservices.demo.repository;
-
-public interface CustomerAddressRepository {
-
-}

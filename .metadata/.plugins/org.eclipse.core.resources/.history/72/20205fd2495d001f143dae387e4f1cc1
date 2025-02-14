@@ -1,5 +1,0 @@
-package com.microservices.cart.repository;
-
-public interface LineItemRepository {
-
-}

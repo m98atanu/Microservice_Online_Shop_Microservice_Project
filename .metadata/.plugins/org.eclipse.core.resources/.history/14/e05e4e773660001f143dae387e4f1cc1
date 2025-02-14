@@ -1,5 +1,0 @@
-package com.microservices.cart.exceptionhandler;
-
-public class ExceptionControllerAdvice {
-
-}

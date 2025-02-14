@@ -1,0 +1,27 @@
+spring.application.name=product-service
+
+server.port=3000
+
+#Database configurations
+#=======================
+spring.datasource.url=jdbc:mysql://localhost:3306/eazybank
+spring.jpa.hibernate.ddl-auto=create
+#spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.username=atanu
+spring.datasource.password=1234
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+#For Eureka
+#===========
+eureka.instance.hostname=localhost
+
+#where my eureka server is running
+eureka.client.serviceUrl.defaultzone=http://${eureka.instance.hostname}:8761/eureka/
+
+# will set to true as this microservice need to be registered with eureka
+eureka.client.register-with-eureka=true
+
+#setting eureka.client.fetch-registry=true allows a Eureka client to obtain the necessazy 
+#information to locate and communicate with other services in a microservices ecosystem.
+eureka.client.fetch-registry=true

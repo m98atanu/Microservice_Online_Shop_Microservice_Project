@@ -1,5 +1,0 @@
-package com.microservices.shoppingservice.model;
-
-public class CustomerAndCartEntity {
-
-}

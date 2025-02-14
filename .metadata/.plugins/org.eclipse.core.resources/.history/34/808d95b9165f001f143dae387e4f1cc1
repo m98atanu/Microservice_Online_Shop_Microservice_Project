@@ -1,5 +1,0 @@
-package com.microservices.shoppingservice.externalAPI.inventoryAPI;
-
-public interface InventoryServiceEndpoints {
-
-}

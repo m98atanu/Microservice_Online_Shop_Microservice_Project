@@ -1,5 +1,0 @@
-package com.microservices.shoppingservice.externalAPI.productAPI;
-
-public interface ProductServiceEndpoints {
-
-}

@@ -1,5 +1,0 @@
-package com.microservices.demo.exceptionhandler;
-
-public class EmailIdNotUniqueException {
-
-}

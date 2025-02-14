@@ -1,5 +1,0 @@
-package com.microservices.cart.service;
-
-public class CartService {
-
-}

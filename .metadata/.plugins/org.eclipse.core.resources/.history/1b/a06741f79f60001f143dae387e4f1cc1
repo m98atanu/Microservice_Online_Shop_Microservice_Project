@@ -1,8 +1,0 @@
-package com.microservices.inventory.exceptionhandler;
-
-public class Snippet {
-	public static void main(String[] args) {
-		new InvalidCustomerIdException(
-	}
-}
-

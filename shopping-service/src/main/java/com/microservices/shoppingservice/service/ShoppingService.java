@@ -102,7 +102,7 @@ public class ShoppingService {
 				com.microservices.shoppingservice.externalAPI.orderAPI.LineItem order = 
 						new com.microservices.shoppingservice.externalAPI.orderAPI.LineItem();
 				order.setProductId(cartItem.getProductId());
-				order.setProductName(cartItem.getProduntName());
+				order.setProductName(cartItem.getProductName());
 				order.setPrice(cartItem.getPrice());
 				order.setQuantity(cartItem.getQuantity());
 				

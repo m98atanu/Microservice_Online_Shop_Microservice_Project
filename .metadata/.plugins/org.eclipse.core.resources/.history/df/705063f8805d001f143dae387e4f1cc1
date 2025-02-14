@@ -1,5 +1,0 @@
-package com.microservices.inventory.external.APIEndpoints;
-
-public class ProductEntity {
-
-}

@@ -1,5 +1,0 @@
-package com.microservices.demo.DTO;
-
-public class UpdatedCustomerDetails {
-
-}

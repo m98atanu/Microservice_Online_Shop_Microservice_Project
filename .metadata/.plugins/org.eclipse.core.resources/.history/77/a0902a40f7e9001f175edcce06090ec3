@@ -1,0 +1,48 @@
+package com.microservices.api.gateway.security;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+
+@Configuration
+public class ProjectSecurityConfig {
+	
+	@Bean
+	SecurityFilterChain securityFilterChain(HttpSecurity httpSec) throws Exception{
+		return httpSec
+//				.cors(corsCustomizer ->{
+//					corsCustomizer.configurationSource(new CorsConfigurationSource() {
+//
+//						@Override
+//						public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+//							CorsConfiguration config = new CorsConfiguration();
+//							config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
+//							config.setAllowedMethods(Collections.singletonList("*"));
+//							config.setAllowCredentials(true); //The browser sends a request with credentials only if the origin is explicitly allowed.
+//							config.setAllowedHeaders(Collections.singletonList("*"));
+//							config.setMaxAge(3600L); //for 1 hour
+//							return config;
+//						}
+//						
+//					});
+//				})
+				.csrf(csrfConfig-> csrfConfig.disable())
+				.authorizeHttpRequests(httpRequest -> httpRequest
+				.requestMatchers("/demo/secured").authenticated()
+				.anyRequest().permitAll()) //here all the other APIs which is not mentioned in above line gets permission without authentication
+				.formLogin(Customizer.withDefaults())
+				.formLogin(Customizer.withDefaults())
+				.build();
+	}
+	
+	
+	@Bean
+	PasswordEncoder passwordEncoder() {
+		return PasswordEncoderFactories.createDelegatingPasswordEncoder(); //BCrypt password encoder: Default password encoder
+	}
+}

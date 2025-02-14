@@ -3,6 +3,7 @@ package com.microservices.cart.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,12 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.microservices.cart.DTO.UpdatedCartItemQuantityForLineItemId;
 import com.microservices.cart.model.CartEntity;
 import com.microservices.cart.model.LineItem;
-import com.microservices.cart.service.CartService;
+import com.microservices.cart.service.ICartService;
 
 @RestController
 @RequestMapping("/api/cart")
 public class CartController {
-	@Autowired CartService cartService;
+	
+	@Qualifier("CartServiceImpl")
+	@Autowired ICartService cartService;
 	
 	@PostMapping("/add")
 	public ResponseEntity<Integer> addCart(@RequestBody CartEntity cart) throws Exception{

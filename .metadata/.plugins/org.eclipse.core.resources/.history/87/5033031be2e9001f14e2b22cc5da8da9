@@ -1,0 +1,5 @@
+package com.microservices.api.gateway.repository;
+
+public interface AdminRepository {
+
+}

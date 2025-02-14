@@ -1,0 +1,554 @@
+What it mean by transaction 
+ChatGPT said:
+ChatGPT
+A transaction in the context of databases and Hibernate refers to a sequence of one or more database operations (such as INSERT, UPDATE, DELETE, SELECT) that are executed as a single logical unit of work. A transaction ensures that the operations are executed in a reliable and consistent manner.
+
+Key Concepts of a Transaction
+ACID Properties:
+
+Atomicity: All operations within a transaction are treated as a single unit. If one operation fails, the entire transaction fails, and the database is rolled back to its previous state.
+Consistency: A transaction must transition the database from one consistent state to another, ensuring all data integrity rules are maintained.
+Isolation: Transactions operate independently of each other, ensuring that intermediate states are not visible to other transactions.
+Durability: Once a transaction has been committed, the changes it made are permanent, even in the event of a system failure.
+Lifecycle of a Transaction:
+
+Begin: A transaction begins before executing any database operations.
+Commit: If all operations succeed, the transaction is committed, and the changes are permanently saved in the database.
+Rollback: If any operation within the transaction fails, the transaction can be rolled back, undoing all changes made during the transaction.
+Example in Hibernate
+In Hibernate, transactions are typically managed using session.beginTransaction(), followed by commit() or rollback().
+
+java
+Copy code
+Session session = sessionFactory.openSession();
+
+Transaction tx = session.beginTransaction();  // Begin a transaction
+
+try {
+    // Perform multiple database operations
+    MyEntity entity = new MyEntity();
+    session.save(entity); // Insert operation
+    
+    entity.setName("Updated Name");
+    session.update(entity); // Update operation
+
+    tx.commit();  // Commit the transaction, making all changes permanent
+} catch (Exception e) {
+    tx.rollback();  // Rollback the transaction if something goes wrong
+    e.printStackTrace();
+} finally {
+    session.close();  // Close the session
+}
+Importance of Transactions
+Consistency: Transactions ensure that the database remains in a consistent state. Either all operations are successfully applied, or none are.
+Error Handling: If an error occurs during a transaction, a rollback can be performed to restore the previous state.
+Concurrency: Transactions provide isolation between different database operations happening concurrently, ensuring data integrity.
+In summary, a transaction groups multiple operations into a single unit of work and guarantees that either all of them are applied (commit) or none (rollback), ensuring data consistency and reliability.
+
+
+
+
+
+
+You said:
+Let say in my transaction I want to insert two records in db, and if any of these fails I want a rollback. But In catch block I have not use tx.rollback(). Will rollback happen automatically or one record will be saved and other won't?
+ChatGPT said:
+ChatGPT
+If you do not explicitly call tx.rollback() in the catch block, Hibernate will not automatically roll back the transaction for you. This means:
+
+One record might be inserted (if it succeeds) before the error occurs.
+If the second insert fails, without a rollback, the first record would still be committed unless the transaction is explicitly rolled back or never committed.
+In most cases, when a transaction is not committed or rolled back manually, the changes made during the transaction remain pending (uncommitted). However, unless you explicitly trigger a rollback or commit the transaction, Hibernate will not automatically undo any operations that succeeded before the failure.
+
+Behavior Without tx.rollback()
+Here’s how the flow works without a rollback:
+
+You start a transaction with tx.beginTransaction().
+You attempt to insert two records:
+The first insert might succeed and be prepared to commit.
+The second insert fails (throws an exception).
+If you do not call tx.rollback() in the catch block, the transaction remains active (but in an inconsistent state).
+If you try to commit the transaction after the exception (or if you do nothing), the first record could be committed, leaving your database in a partial state (i.e., one record saved, one not).
+Proper Transaction Handling
+To ensure that either both records are inserted or neither is inserted, you should use the tx.rollback() in the catch block. This guarantees that if any operation within the transaction fails, all changes made during the transaction are undone.
+
+Example:
+java
+Copy code
+Session session = sessionFactory.openSession();
+Transaction tx = session.beginTransaction();
+
+try {
+    // Insert first record
+    MyEntity entity1 = new MyEntity();
+    session.save(entity1);
+
+    // Insert second record (let's assume an exception happens here)
+    MyEntity entity2 = new MyEntity();
+    session.save(entity2);
+
+    tx.commit();  // Commit transaction if both succeed
+} catch (Exception e) {
+    // Rollback transaction in case of failure
+    if (tx != null) {
+        tx.rollback();  // Rollback ensures no record is saved if one fails
+    }
+    e.printStackTrace();
+} finally {
+    session.close();
+}
+Key Points:
+Without rollback(): If you don't call tx.rollback() and an exception occurs, the transaction won't automatically roll back, and if it gets committed later, one record could still be saved while the other fails.
+
+With rollback(): If an error occurs and you call tx.rollback(), neither record will be saved, and the database will remain in its original state.
+
+In summary, you must explicitly call tx.rollback() in the catch block to ensure that the transaction is rolled back. Otherwise, the first successful operation might still commit, leading to inconsistent data in your database.
+
+
+
+
+
+
+You said:
+But my error occurred before tx.commit()
+ChatGPT said:
+ChatGPT
+If the error occurs before tx.commit(), the transaction will remain uncommitted, and the database changes will not be applied unless you explicitly commit the transaction. However, rollback will not happen automatically unless you explicitly call tx.rollback() or the session is closed without committing the transaction.
+
+Here’s how it works:
+
+Transaction Not Committed: If an error occurs before tx.commit(), the transaction is still open. Any changes made during the transaction are not yet persisted to the database because the commit has not been called.
+
+No Rollback Without Explicit Call: Even if commit() has not been called, the changes are still "pending" in the transaction. If you do not explicitly call tx.rollback(), these changes will remain in an inconsistent state, and you could potentially commit the transaction later (either manually or accidentally).
+
+Session Closure: If the session is closed without committing, some underlying database connections might automatically roll back the transaction, but this depends on the configuration of the database or transaction manager being used. Relying on this behavior is risky and not recommended because it’s not guaranteed in all cases.
+
+What Happens Without tx.rollback() Before tx.commit():
+If an error occurs before the commit() and you do not call rollback(), the transaction is still active but uncommitted.
+If you don't handle the transaction properly (e.g., by forgetting to roll it back), the session remains in an inconsistent state.
+Any changes made before the error will not be persisted to the database unless you commit them later. However, if you close the session without committing, those changes might be lost, depending on the transaction's lifecycle.
+Example Scenario:
+java
+Copy code
+Session session = sessionFactory.openSession();
+Transaction tx = session.beginTransaction();
+
+try {
+    // Insert the first record (this is in the pending state, not committed)
+    MyEntity entity1 = new MyEntity();
+    session.save(entity1);
+
+    // Insert second record, let's assume an error occurs here
+    MyEntity entity2 = new MyEntity();
+    session.save(entity2);  // Exception occurs here, before commit()
+
+    // No commit occurs because of the exception, so changes are not saved
+    tx.commit();
+} catch (Exception e) {
+    // If rollback is not called here, the transaction remains active but uncommitted
+    e.printStackTrace();
+} finally {
+    session.close();  // If session is closed without committing, some databases will rollback, but this is not guaranteed
+}
+Key Behavior:
+No Commit: If an exception occurs before calling tx.commit(), no changes are applied to the database, because the transaction is never committed.
+
+No Rollback: If you don't explicitly call tx.rollback(), the transaction will still be active in memory. While no changes will be applied to the database, it is good practice to call rollback() to explicitly abort the transaction and release any database resources tied to it.
+
+Closing the Session: If the session is closed without committing, some databases might automatically roll back the transaction, but this behavior varies based on the configuration of the transaction manager and the database. It’s not something to rely on.
+
+Best Practice:
+Even if the error happens before commit(), always call tx.rollback() in the catch block to ensure that the transaction is properly aborted, and no partial or pending changes are left hanging.
+
+java
+Copy code
+catch (Exception e) {
+    if (tx != null) {
+        tx.rollback();  // Always rollback to safely cancel the transaction
+    }
+    e.printStackTrace();
+}
+In summary, if the error occurs before tx.commit(), the changes won't be applied to the database. However, to ensure proper cleanup and avoid any inconsistent state or resource locks, it is still important to explicitly call tx.rollback() in the catch block.
+
+
+
+
+
+
+You said:
+And these transactions related things are managed by SpringDataJPA automatically?
+ChatGPT said:
+ChatGPT
+Yes, Spring Data JPA provides automatic transaction management, making it much easier to work with transactions in your application. Spring abstracts away much of the boilerplate code for managing transactions, such as manually calling beginTransaction(), commit(), or rollback().
+
+How Transactions Are Managed Automatically in Spring Data JPA
+Spring handles transactions automatically using the @Transactional annotation and its integration with the Spring Transaction Management framework. Here's how it works:
+
+@Transactional Annotation: When you annotate a method (typically in a service layer) with @Transactional, Spring automatically starts a transaction when the method is invoked. At the end of the method, Spring either commits the transaction (if no exception occurs) or rolls it back (if a runtime exception is thrown).
+
+Automatic Rollback: If a method marked with @Transactional throws a runtime exception (unchecked exceptions), Spring will automatically roll back the transaction. For checked exceptions, the transaction will not be rolled back unless you explicitly configure the rollback for those exceptions.
+
+Automatic Commit: If the method completes successfully without throwing any exceptions, Spring will commit the transaction automatically.
+
+Propagation and Isolation: Spring allows you to configure advanced transaction behaviors like propagation (whether the transaction should be propagated or start a new one) and isolation levels (how the transaction should behave with concurrent transactions).
+
+Example with @Transactional:
+java
+Copy code
+@Service
+public class MyService {
+
+    @Autowired
+    private MyEntityRepository myEntityRepository;
+
+    @Transactional  // Spring will automatically manage the transaction
+    public void saveEntities() {
+        // This is a single transaction
+        MyEntity entity1 = new MyEntity();
+        myEntityRepository.save(entity1);  // Save first entity
+
+        MyEntity entity2 = new MyEntity();
+        myEntityRepository.save(entity2);  // Save second entity
+    }
+}
+Key Points of Automatic Transaction Management in Spring Data JPA
+Transaction Boundaries: Spring automatically starts a transaction when a method annotated with @Transactional is called, and it commits the transaction at the end of the method if everything succeeds.
+
+Rollback on Exceptions:
+
+RuntimeException (Unchecked Exceptions): Spring will automatically roll back the transaction.
+Checked Exceptions: Spring will not roll back the transaction unless you explicitly configure it using @Transactional(rollbackFor = Exception.class).
+Default Behavior:
+
+By default, transactions are set to propagation required, meaning if there is an existing transaction, it will participate in it. If not, a new transaction is started.
+The default isolation level is usually the database's default.
+No Need for Manual Rollback or Commit: Unlike plain Hibernate or JPA, you don’t need to manually call commit() or rollback(). Spring handles this for you, so you just need to define the transaction boundaries with @Transactional.
+
+Example with Rollback for Checked Exceptions:
+java
+Copy code
+@Service
+public class MyService {
+
+    @Autowired
+    private MyEntityRepository myEntityRepository;
+
+    @Transactional(rollbackFor = Exception.class)  // Rollback for both checked and unchecked exceptions
+    public void saveEntities() throws Exception {
+        MyEntity entity1 = new MyEntity();
+        myEntityRepository.save(entity1);
+
+        // Some code that throws a checked exception
+        throw new Exception("Something went wrong");
+
+        MyEntity entity2 = new MyEntity();
+        myEntityRepository.save(entity2);
+    }
+}
+In this case, even though a checked exception is thrown, the transaction will be rolled back because of the rollbackFor = Exception.class specification.
+
+Advanced Configuration with @Transactional:
+You can configure various transaction properties using the @Transactional annotation:
+
+propagation: Defines how the transaction should behave if there's already an active transaction.
+isolation: Specifies the isolation level of the transaction (e.g., READ_COMMITTED, SERIALIZABLE).
+timeout: Specifies how long the transaction is allowed to run before being rolled back.
+readOnly: Indicates if the transaction is read-only, which can provide some performance optimizations.
+java
+Copy code
+@Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED, timeout = 5)
+public void someMethod() {
+    // Code here
+}
+Summary:
+Yes, Spring Data JPA handles transactions automatically for you, primarily through the @Transactional annotation.
+Spring manages the transaction boundaries, commits, and rollbacks automatically based on whether exceptions occur.
+For most use cases, you don’t need to manually manage transactions as Spring Data JPA abstracts that away, allowing you to focus on business logic.
+
+
+
+
+
+You said:
+You are saying like when I need to do let say 3 microservices methods. Like say I have shoppingService and here to perform payment activities I have used methods of three microservices and if those methods called successfully they are supposed to do some changes in db. Now if I use @Transactional in my shoppingService's method and one of them fails then will the rest two microservices methods not be able to change anything in db?
+ChatGPT said:
+ChatGPT
+No, simply using @Transactional in your shoppingService method won't automatically ensure that all three microservices either succeed together or fail together, especially in the context of a distributed system. Transactions in Spring (using @Transactional) work well within a single application and single database but are not sufficient to manage transactions across multiple microservices and multiple databases.
+
+This is because traditional database transactions (like the one controlled by @Transactional) are local to a single application. They rely on a single database connection or resource manager. In microservices, each service typically manages its own database, and the transaction boundaries of each service are independent.
+
+How Transactions Work in Microservices
+When you're dealing with multiple microservices, the transaction management problem becomes more complex because you're essentially dealing with distributed transactions. A simple @Transactional annotation in one service (e.g., shoppingService) won't affect what happens in other microservices.
+
+Here’s why:
+
+Local Transactions: The @Transactional annotation only manages local database transactions, meaning changes made within the same service (same database context).
+Independent Databases: Each microservice typically has its own database. A failure in one microservice will not automatically roll back changes made by another microservice, as each service manages its own transaction.
+Network Calls: Calls between microservices are typically done over HTTP (REST) or messaging (e.g., Kafka), and these are stateless operations. They do not participate in a single, unified transaction by default.
+Solution: Distributed Transactions in Microservices
+To handle transactions across multiple microservices, you would typically need a distributed transaction management strategy. The two most common patterns for this are:
+
+1. Two-Phase Commit (2PC):
+What It Is: 2PC is a protocol where all participating microservices are involved in a coordinated transaction. A central coordinator (transaction manager) ensures that either all microservices commit or all roll back.
+How It Works:
+Phase 1 (Prepare): All microservices agree to commit, but they don’t actually commit yet. They respond with a "prepared" state.
+Phase 2 (Commit/Rollback): If all services are ready, the coordinator sends a commit signal. If any service fails to prepare, a rollback is issued.
+Challenges: 2PC is complex, slow, and not widely used in modern microservices because it introduces a lot of coupling and can become a bottleneck.
+2. Saga Pattern (Preferred Approach):
+What It Is: The Saga pattern is a more common and preferred solution in microservices. In a saga, each service manages its own local transaction, but if one service fails, compensating actions (undo operations) are triggered to roll back the changes in the other services.
+How It Works:
+Each microservice executes a step of the transaction and then publishes an event (success or failure).
+If one service fails, other services that have already completed their work must perform compensating transactions (like undoing or reversing the operation).
+Types of Sagas:
+Choreography: Each service listens to events from other services and reacts accordingly (without a central orchestrator).
+Orchestration: A central orchestrator (like a workflow engine) directs the transaction and sends commands to services.
+Example of Saga Pattern:
+Service 1 (Order Creation): Order service creates an order and publishes an event.
+Service 2 (Payment Service): Payment service listens for the order event, processes payment, and publishes a payment success/failure event.
+Service 3 (Inventory Service): Inventory service listens for the payment success event and reserves items.
+If payment fails, the payment service publishes a failure event, and the order service listens for this and cancels the order.
+If the inventory reservation fails, the inventory service publishes a failure event, and the payment service refunds the payment.
+This way, even if one microservice fails, the overall system can gracefully handle the failure by rolling back the changes via compensating actions.
+
+Example Workflow in Saga:
+java
+Copy code
+// ShoppingService
+public class ShoppingService {
+    
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private PaymentService paymentService;
+
+    @Autowired
+    private InventoryService inventoryService;
+
+    public void createOrderAndProcessPayment(Order order) {
+        // Step 1: Create an order (local transaction)
+        orderService.createOrder(order);
+
+        // Step 2: Process payment (request to PaymentService)
+        paymentService.processPayment(order);
+
+        // Step 3: Reserve inventory (request to InventoryService)
+        inventoryService.reserveItems(order);
+
+        // If any step fails, compensating transactions must be triggered (handled via saga orchestration)
+    }
+}
+Handling Failures in a Saga:
+If Payment Fails: The order service could cancel the order.
+If Inventory Reservation Fails: The payment service could issue a refund, and the order service could cancel the order.
+Why @Transactional Isn't Enough for Microservices:
+Local Scope: @Transactional only controls the scope of a single transaction within the local database of the microservice.
+Distributed Systems: Microservices typically involve independent databases and stateless communication, so transaction management across services requires a different mechanism like sagas or distributed transaction coordinators.
+Summary:
+Using @Transactional in your shoppingService won’t automatically prevent the other two microservices from making changes to their databases if one fails.
+For multi-microservice transactions, you need a distributed transaction strategy like the Saga pattern or Two-Phase Commit (2PC).
+The Saga pattern is preferred for microservices as it provides more flexibility and avoids the complexity and performance drawbacks of 2PC.
+
+
+
+
+
+You said:
+Give me a complete example code of saga patterns you have described here with all the microservices 
+ChatGPT said:
+ChatGPT
+Here’s a simplified example of implementing the Saga pattern in a microservices architecture. In this scenario, we have three microservices: OrderService, PaymentService, and InventoryService. Each service will participate in the saga by listening for events and triggering actions based on the events they receive.
+
+Assumptions:
+Each microservice communicates asynchronously using event-driven communication (e.g., Kafka, RabbitMQ).
+We are using Spring Boot and Spring Cloud for implementing microservices.
+Saga orchestration is used for simplicity.
+Microservices Overview:
+OrderService: Creates an order and publishes an event.
+PaymentService: Listens for order events, processes the payment, and publishes a success or failure event.
+InventoryService: Listens for payment success events and reserves items. If reservation fails, it publishes a failure event.
+Compensating Actions: If something goes wrong at any stage, compensating actions are taken (e.g., cancel order or refund payment).
+Microservice 1: Order Service
+java
+Copy code
+@RestController
+@RequestMapping("/orders")
+public class OrderController {
+
+    @Autowired
+    private OrderService orderService;
+
+    @PostMapping
+    public ResponseEntity<String> createOrder(@RequestBody Order order) {
+        orderService.createOrder(order);
+        return ResponseEntity.ok("Order created successfully and saga started.");
+    }
+}
+
+@Service
+public class OrderService {
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private KafkaTemplate<String, OrderEvent> kafkaTemplate;
+
+    public void createOrder(Order order) {
+        // Step 1: Save order (local transaction)
+        order.setStatus(OrderStatus.CREATED);
+        orderRepository.save(order);
+
+        // Step 2: Publish an event to start the saga
+        OrderEvent orderEvent = new OrderEvent(order, OrderStatus.CREATED);
+        kafkaTemplate.send("order-events", orderEvent);
+    }
+
+    public void cancelOrder(Order order) {
+        order.setStatus(OrderStatus.CANCELLED);
+        orderRepository.save(order);
+        System.out.println("Order cancelled due to saga failure.");
+    }
+}
+OrderEvent is published after the order is created. This triggers the next step in the saga (payment processing).
+Microservice 2: Payment Service
+java
+Copy code
+@Service
+public class PaymentService {
+
+    @Autowired
+    private KafkaTemplate<String, PaymentEvent> kafkaTemplate;
+
+    @KafkaListener(topics = "order-events", groupId = "payment-group")
+    public void handleOrderEvent(OrderEvent orderEvent) {
+        // Step 1: Process payment based on order event
+        if (orderEvent.getStatus() == OrderStatus.CREATED) {
+            try {
+                processPayment(orderEvent.getOrder());
+                PaymentEvent paymentEvent = new PaymentEvent(orderEvent.getOrder(), PaymentStatus.SUCCESS);
+                kafkaTemplate.send("payment-events", paymentEvent);
+            } catch (Exception e) {
+                // Payment failed
+                PaymentEvent paymentEvent = new PaymentEvent(orderEvent.getOrder(), PaymentStatus.FAILED);
+                kafkaTemplate.send("payment-events", paymentEvent);
+            }
+        }
+    }
+
+    private void processPayment(Order order) throws PaymentFailedException {
+        // Payment processing logic
+        if (paymentFails()) {
+            throw new PaymentFailedException("Payment failed for order " + order.getId());
+        }
+        System.out.println("Payment successful for order: " + order.getId());
+    }
+
+    private boolean paymentFails() {
+        return Math.random() < 0.2;  // Simulate 20% chance of payment failure
+    }
+}
+The PaymentService listens for order events and processes the payment. It sends success or failure events accordingly.
+Microservice 3: Inventory Service
+java
+Copy code
+@Service
+public class InventoryService {
+
+    @Autowired
+    private KafkaTemplate<String, InventoryEvent> kafkaTemplate;
+
+    @KafkaListener(topics = "payment-events", groupId = "inventory-group")
+    public void handlePaymentEvent(PaymentEvent paymentEvent) {
+        if (paymentEvent.getStatus() == PaymentStatus.SUCCESS) {
+            try {
+                reserveInventory(paymentEvent.getOrder());
+                InventoryEvent inventoryEvent = new InventoryEvent(paymentEvent.getOrder(), InventoryStatus.RESERVED);
+                kafkaTemplate.send("inventory-events", inventoryEvent);
+            } catch (Exception e) {
+                InventoryEvent inventoryEvent = new InventoryEvent(paymentEvent.getOrder(), InventoryStatus.FAILED);
+                kafkaTemplate.send("inventory-events", inventoryEvent);
+            }
+        } else if (paymentEvent.getStatus() == PaymentStatus.FAILED) {
+            // Compensation logic for payment failure
+            System.out.println("Payment failed, no need to reserve inventory for order " + paymentEvent.getOrder().getId());
+        }
+    }
+
+    private void reserveInventory(Order order) throws InventoryReservationException {
+        // Inventory reservation logic
+        if (inventoryFails()) {
+            throw new InventoryReservationException("Inventory reservation failed for order " + order.getId());
+        }
+        System.out.println("Inventory reserved for order: " + order.getId());
+    }
+
+    private boolean inventoryFails() {
+        return Math.random() < 0.2;  // Simulate 20% chance of inventory failure
+    }
+}
+The InventoryService listens for payment success events and tries to reserve inventory. If it fails, it sends a failure event.
+Compensating Actions in the Saga
+If the PaymentService fails to process the payment, it will publish a payment failure event. This will prevent the InventoryService from reserving items.
+If the InventoryService fails to reserve items, it publishes a failure event. The OrderService listens for this and can cancel the order and potentially trigger a refund.
+These compensating actions are part of the overall saga, ensuring that if one part fails, other services can "undo" their respective actions (like cancelling an order or issuing a refund).
+Compensation Example: Cancel Order on Inventory Failure
+java
+Copy code
+@Service
+public class OrderCompensationService {
+
+    @Autowired
+    private OrderService orderService;
+
+    @KafkaListener(topics = "inventory-events", groupId = "order-compensation-group")
+    public void handleInventoryEvent(InventoryEvent inventoryEvent) {
+        if (inventoryEvent.getStatus() == InventoryStatus.FAILED) {
+            // Compensate by cancelling the order
+            orderService.cancelOrder(inventoryEvent.getOrder());
+        }
+    }
+}
+If InventoryService fails to reserve items, the order will be cancelled by the OrderService using this compensating action.
+Event Classes (for Communication)
+Here’s an example of the event classes:
+
+java
+Copy code
+public class OrderEvent {
+    private Order order;
+    private OrderStatus status;
+    // getters and setters
+}
+
+public class PaymentEvent {
+    private Order order;
+    private PaymentStatus status;
+    // getters and setters
+}
+
+public class InventoryEvent {
+    private Order order;
+    private InventoryStatus status;
+    // getters and setters
+}
+Kafka Configuration (Common for All Microservices)
+yaml
+Copy code
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: your-group-id
+      auto-offset-reset: earliest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+Summary:
+Each microservice operates in its own transaction boundary (local transaction).
+Saga orchestration ensures that if any step fails (e.g., payment or inventory), compensating actions like canceling orders or issuing refunds can be performed.
+This example uses Kafka for event-driven communication, but you could also use RabbitMQ or any other messaging system.
+OrderService starts the saga, and the other microservices (Payment and Inventory) listen for events and react accordingly.

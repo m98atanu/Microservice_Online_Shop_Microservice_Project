@@ -1,5 +1,0 @@
-package com.microservices.shoppingservice.service;
-
-public class ShoppingService {
-
-}

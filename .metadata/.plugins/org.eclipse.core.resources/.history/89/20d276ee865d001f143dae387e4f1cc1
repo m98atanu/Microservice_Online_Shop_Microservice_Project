@@ -1,7 +1,0 @@
-package com.microservices.inventory.controller;
-
-@RestController
-@RequestBody("api/")
-public class InventoryController {
-
-}

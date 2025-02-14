@@ -1,0 +1,31 @@
+package com.microservices.api.gateway.security;
+
+import java.io.IOException;
+
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+public class JwtTokenGeneratorFilter extends OncePerRequestFilter {
+
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
+		
+
+	}
+	
+	/*
+	  	It checks if the request's path (URI) is exactly "/register/admin".
+		If true, the filter will not be applied to this request.
+		If false, the filter will be executed for the request.
+	 */
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+		return request.getServletPath().equals("/register/admin");
+	}
+
+}

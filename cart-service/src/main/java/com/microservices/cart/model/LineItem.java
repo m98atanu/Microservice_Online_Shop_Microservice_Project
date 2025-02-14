@@ -14,7 +14,7 @@ public class LineItem {
 	@GeneratedValue
 	private int itemId;
 	private int productId;
-	private String produntName;
+	private String productName;
 	private int quantity;
 	private double price;
 

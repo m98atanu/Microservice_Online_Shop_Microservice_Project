@@ -1,0 +1,5 @@
+package com.microservices.api.gateway.controller;
+
+public class AdminController {
+
+}

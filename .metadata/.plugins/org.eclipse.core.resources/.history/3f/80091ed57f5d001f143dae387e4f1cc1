@@ -1,5 +1,0 @@
-package com.microservices.inventory.DTO;
-
-public class UpdatedInventoryQuantity {
-
-}
