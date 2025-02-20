@@ -6,7 +6,6 @@
     <fullyQualifiedTypeName name="com.microservices.cart.repository.LineItemRepository"/>
     <fullyQualifiedTypeName name="com.microservices.cart.model.CartEntity"/>
     <fullyQualifiedTypeName name="jakarta.persistence.CascadeType"/>
-    <fullyQualifiedTypeName name="com.microservices.order.model.LineItem"/>
     <fullyQualifiedTypeName name="com.microservices.order.service.OrderService"/>
     <fullyQualifiedTypeName name="com.microservices.shoppingservice.externalAPI.productAPI.ProductEntity"/>
     <fullyQualifiedTypeName name="com.microservices.demo.exceptionhandler.EmailIdNotUniqueException"/>
@@ -32,4 +31,12 @@
     <fullyQualifiedTypeName name="org.springframework.security.core.Authentication"/>
     <fullyQualifiedTypeName name="org.springframework.security.core.authority.AuthorityUtils"/>
     <fullyQualifiedTypeName name="org.springframework.security.core.context.SecurityContextHolder"/>
+    <fullyQualifiedTypeName name="com.microservices.shoppingservice.kafka.Topics"/>
+    <fullyQualifiedTypeName name="jakarta.persistence.Table"/>
+    <fullyQualifiedTypeName name="com.microservices.order.kafka.LineItem"/>
+    <fullyQualifiedTypeName name="com.microservices.shoppingservice.kafka.OrderEvent"/>
+    <fullyQualifiedTypeName name="com.microservices.order.model.LineItem"/>
+    <fullyQualifiedTypeName name="com.microservices.order.model.OrderEntity"/>
+    <fullyQualifiedTypeName name="com.microservices.shoppingservice.model.entity.CustomerAndOrderEntity"/>
+    <fullyQualifiedTypeName name="jakarta.annotation.Nullable"/>
 </qualifiedTypeNameHistroy>

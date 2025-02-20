@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import com.microservices.shoppingservice.externalAPI.cartAPI.CartEntity;
@@ -19,6 +20,7 @@ import com.microservices.shoppingservice.externalAPI.orderAPI.OrderEntity;
 import com.microservices.shoppingservice.externalAPI.orderAPI.OrderServiceEndpoints;
 import com.microservices.shoppingservice.externalAPI.productAPI.ProductEntity;
 import com.microservices.shoppingservice.externalAPI.productAPI.ProductServiceEndpoints;
+import com.microservices.shoppingservice.kafka.OrderEvent;
 import com.microservices.shoppingservice.model.POJO.CustomerAndAllOrderDetails;
 import com.microservices.shoppingservice.model.POJO.ProductAndInventory;
 import com.microservices.shoppingservice.model.entity.CustomerAndCartEntity;
@@ -36,6 +38,9 @@ public class ShoppingService {
 	@Autowired CustomerServiceEndpoints customerAPI;
 	@Autowired CartServiceEndpoints cartAPI;
 	@Autowired OrderServiceEndpoints orderAPI;
+	
+	@Autowired
+	KafkaTemplate<String, OrderEvent> kafkaOrder;
 	
 	public String addProductAndInventory(ProductAndInventory productAndInventory) {
 		ProductEntity product = new ProductEntity();
@@ -111,7 +116,24 @@ public class ShoppingService {
 			
 			OrderEntity orderEntity = new OrderEntity();
 			orderEntity.setLineItems(orderLineItems);
-			int orderId = orderAPI.addOrder(orderEntity).getBody(); //ORDER PLACED
+//			/*int orderId = */orderAPI.addOrder(orderEntity)/*.getBody()*/; //ORDER PLACED//Kafka communication from order service
+			
+			//Kafka: code changed
+			OrderEvent orderEvent = new OrderEvent();
+			orderEvent.setOrderId(orderEntity.getOrderId());
+			List<com.microservices.shoppingservice.kafka.LineItem> lineItems = new ArrayList<>();
+			orderEntity.getLineItems().forEach(item->{
+				com.microservices.shoppingservice.kafka.LineItem itm = new com.microservices.shoppingservice.kafka.LineItem();
+				itm.setItemId(item.getItemId());
+				itm.setPrice(item.getPrice());
+				itm.setProductId(item.getProductId());
+				itm.setProductName(item.getProductName());
+				itm.setQuantity(item.getQuantity());
+				lineItems.add(itm);
+			});
+			orderEvent.setLineItems(lineItems);
+			orderEvent.setCustomerId(customerId);
+			kafkaOrder.send("new-order", orderEvent); //will listen by order-service
 			
 			System.out.println("debug: OrderLineItems: " + orderLineItems); //debug purpose
 			
@@ -119,20 +141,20 @@ public class ShoppingService {
 			cartAPI.deleteCartByCartId(cartId);
 			
 			//Inventory updation after successfully order placed
-			orderEntity.getLineItems().forEach(orderedItem->{
-				int oldQuantityOfTheItem = inventoryAPI.fetchInventoryByProductId(orderedItem.getProductId()).getBody().getQuantity();
-				int quantityOrdered = orderedItem.getQuantity();
-				int currentQuantityOfTheItem = oldQuantityOfTheItem - quantityOrdered;
-				UpdatedInventoryQuantity updatedInventoryQuantity = new UpdatedInventoryQuantity();
-				updatedInventoryQuantity.setQuantity(currentQuantityOfTheItem);
-				inventoryAPI.updateInventoryByProductId(orderedItem.getProductId(), updatedInventoryQuantity);
-			});
+//			orderEntity.getLineItems().forEach(orderedItem->{
+//				int oldQuantityOfTheItem = inventoryAPI.fetchInventoryByProductId(orderedItem.getProductId()).getBody().getQuantity();
+//				int quantityOrdered = orderedItem.getQuantity();
+//				int currentQuantityOfTheItem = oldQuantityOfTheItem - quantityOrdered;
+//				UpdatedInventoryQuantity updatedInventoryQuantity = new UpdatedInventoryQuantity();
+//				updatedInventoryQuantity.setQuantity(currentQuantityOfTheItem);
+//				inventoryAPI.updateInventoryByProductId(orderedItem.getProductId(), updatedInventoryQuantity);
+//			});
 			
 			//mapping customerId with successfully order's orderId
-			CustomerAndOrderEntity customerAndOrder = new CustomerAndOrderEntity();
-			customerAndOrder.setCustomerId(customerId);
-			customerAndOrder.setOrderId(orderId);
-			customerAndOrderRepo.save(customerAndOrder);
+//			CustomerAndOrderEntity customerAndOrder = new CustomerAndOrderEntity();
+//			customerAndOrder.setCustomerId(customerId);
+//			customerAndOrder.setOrderId(orderId);
+//			customerAndOrderRepo.save(customerAndOrder);
 			
 			return "Order has been placed successfully";
 		}

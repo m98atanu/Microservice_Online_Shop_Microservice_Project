@@ -21,10 +21,10 @@ public class OrderController {
 	
 	@Autowired OrderService orderService;
 	
-	@PostMapping("/add")
-	public ResponseEntity<Integer> addOrder(@RequestBody OrderEntity order) throws Exception{
-		return new ResponseEntity<Integer>(orderService.addOrder(order), HttpStatus.CREATED);
-	}
+//	@PostMapping("/add")
+//	public ResponseEntity<Integer> addOrder(@RequestBody OrderEntity order) throws Exception{
+//		return new ResponseEntity<Integer>(orderService.addOrder(order), HttpStatus.CREATED);
+//	}
 	
 	@GetMapping("/{orderId}")
 	public ResponseEntity<OrderEntity> searchOrderById(@PathVariable int orderId) throws Exception{
